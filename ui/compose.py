@@ -122,6 +122,316 @@ class ComposeMixin:
         except Exception:
             return True  # On error, include sig to be safe
 
+    # ── New Compose ─────────────────────────────────────────────
+
+    def _compose_new(self):
+        """Open a standalone compose window for a new email."""
+        log.info("[compose] new email")
+
+        # Determine which client to use
+        client = self.graph or self.google_client
+        if not client:
+            showerror("No Account", "Sign in to an email account first.")
+            return
+
+        win = wx.Frame(self.root, title="✉ New Message",
+                       size=(700, 580),
+                       style=wx.DEFAULT_FRAME_STYLE)
+        win.SetMinSize((500, 400))
+        win.SetBackgroundColour(_hex(C['bg_card']))
+        sizer = wx.BoxSizer(wx.VERTICAL)
+
+        # ── To field ──────────────────────────────────────────
+        to_row = wx.BoxSizer(wx.HORIZONTAL)
+        to_lbl = wx.StaticText(win, label="To:")
+        to_lbl.SetMinSize((55, -1))
+        to_row.Add(to_lbl, 0, wx.ALIGN_CENTER_VERTICAL | wx.RIGHT, 4)
+        to_entry = wx.TextCtrl(win)
+        to_row.Add(to_entry, 1, wx.EXPAND)
+        sizer.Add(to_row, 0, wx.EXPAND | wx.ALL, 8)
+
+        # ── CC field ──────────────────────────────────────────
+        cc_row = wx.BoxSizer(wx.HORIZONTAL)
+        cc_lbl = wx.StaticText(win, label="CC:")
+        cc_lbl.SetMinSize((55, -1))
+        cc_row.Add(cc_lbl, 0, wx.ALIGN_CENTER_VERTICAL | wx.RIGHT, 4)
+        cc_entry = wx.TextCtrl(win)
+        cc_row.Add(cc_entry, 1, wx.EXPAND)
+        sizer.Add(cc_row, 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 8)
+
+        # ── Subject field ─────────────────────────────────────
+        subj_row = wx.BoxSizer(wx.HORIZONTAL)
+        subj_lbl = wx.StaticText(win, label="Subject:")
+        subj_lbl.SetMinSize((55, -1))
+        subj_row.Add(subj_lbl, 0, wx.ALIGN_CENTER_VERTICAL | wx.RIGHT, 4)
+        subj_entry = wx.TextCtrl(win)
+        subj_row.Add(subj_entry, 1, wx.EXPAND)
+        sizer.Add(subj_row, 0, wx.EXPAND | wx.ALL, 8)
+
+        # ── Body ──────────────────────────────────────────────
+        body_entry = wx.TextCtrl(win, style=wx.TE_MULTILINE | wx.TE_RICH2)
+        body_entry.SetFont(_font(FONT, 11))
+        sizer.Add(body_entry, 1, wx.EXPAND | wx.LEFT | wx.RIGHT, 8)
+
+        # ── Signature ─────────────────────────────────────────
+        sig_check = wx.CheckBox(win, label="Include signature")
+        sig_check.SetValue(True)
+        sizer.Add(sig_check, 0, wx.LEFT | wx.TOP, 8)
+
+        sig_text = self._build_signature_plain()
+        sig_label = wx.StaticText(win, label=sig_text)
+        sig_label.SetForegroundColour(_hex(C['muted']))
+        sig_label.SetFont(_font(FONT, 9))
+        sizer.Add(sig_label, 0, wx.LEFT | wx.BOTTOM, 8)
+
+        def _toggle_sig(evt):
+            sig_label.Show(sig_check.GetValue())
+            win.Layout()
+        sig_check.Bind(wx.EVT_CHECKBOX, _toggle_sig)
+
+        # ── Status bar for spell check ────────────────────────
+        status_label = wx.StaticText(win, label="")
+        status_label.SetForegroundColour(_hex(C['muted']))
+        status_label.SetFont(_font(FONT, 9))
+        sizer.Add(status_label, 0, wx.LEFT | wx.RIGHT, 8)
+
+        # ── Buttons ───────────────────────────────────────────
+        btn_row = wx.BoxSizer(wx.HORIZONTAL)
+        send_btn = wx.Button(win, label="📤 Send")
+        send_btn.SetBackgroundColour(_hex(C['btn_primary']))
+        send_btn.SetForegroundColour(wx.WHITE)
+        btn_row.Add(send_btn, 0, wx.RIGHT, 8)
+
+        fix_btn = wx.Button(win, label="🔧 Fix All")
+        btn_row.Add(fix_btn, 0, wx.RIGHT, 8)
+
+        cancel_btn = wx.Button(win, label="Cancel")
+        btn_row.Add(cancel_btn, 0)
+        sizer.Add(btn_row, 0, wx.ALL, 8)
+
+        # ── Spell check wiring ────────────────────────────────
+        _spell_timer = [None]
+        _spell_errors = [[]]
+
+        def _clear_spell(text_ctrl):
+            _spell_errors[0] = []
+            try:
+                length = text_ctrl.GetLastPosition()
+                if length > 0:
+                    attr = wx.TextAttr()
+                    attr.SetBackgroundColour(text_ctrl.GetBackgroundColour())
+                    text_ctrl.SetStyle(0, length, attr)
+            except Exception:
+                pass
+
+        def _apply_marks(checked_text, errors, text_ctrl):
+            current = text_ctrl.GetValue().strip()
+            if current != checked_text:
+                return
+            _clear_spell(text_ctrl)
+            _spell_errors[0] = errors
+            if not errors:
+                status_label.SetLabel("No spelling or grammar issues ✓")
+                return
+            for err in errors:
+                start = err.get("offset", 0)
+                end = start + err.get("length", 0)
+                if end <= start:
+                    continue
+                is_spell = any(r in err.get("rule", "")
+                               for r in ["SPEL", "SPELL", "MORFOLOGIK", "HUNSPELL"])
+                colour = wx.Colour(255, 255, 150) if is_spell else wx.Colour(255, 200, 120)
+                try:
+                    attr = wx.TextAttr()
+                    attr.SetBackgroundColour(colour)
+                    text_ctrl.SetStyle(start, end, attr)
+                except Exception:
+                    pass
+            cs = sum(1 for e in errors if any(r in e.get("rule", "")
+                     for r in ["SPEL", "SPELL", "MORFOLOGIK", "HUNSPELL"]))
+            cg = len(errors) - cs
+            parts = []
+            if cs: parts.append(f"{cs} spelling")
+            if cg: parts.append(f"{cg} grammar")
+            status_label.SetLabel(
+                f"Found {' and '.join(parts)} issue{'s' if len(errors) > 1 else ''}")
+
+        def _run_spell():
+            text = body_entry.GetValue().strip()
+            if not text:
+                _clear_spell(body_entry)
+                status_label.SetLabel("")
+                return
+            status_label.SetLabel("Checking spelling...")
+            def run():
+                errors = self.spell_checker.check(text)
+                wx.CallAfter(lambda: _apply_marks(text, errors, body_entry))
+            threading.Thread(target=run, daemon=True).start()
+
+        def _on_body_key(evt):
+            evt.Skip()
+            if _spell_timer[0]:
+                _spell_timer[0].Stop()
+            _spell_timer[0] = wx.CallLater(800, _run_spell)
+
+        body_entry.Bind(wx.EVT_TEXT, _on_body_key)
+
+        def _on_fix_all(evt):
+            text = body_entry.GetValue().strip()
+            if not text:
+                return
+            fix_btn.Disable()
+            status_label.SetLabel("Fixing...")
+            def run():
+                fixed = self.spell_checker.auto_fix(text)
+                def apply():
+                    current = body_entry.GetValue().strip()
+                    if current == text and fixed != text:
+                        body_entry.SetValue(fixed)
+                        _clear_spell(body_entry)
+                        status_label.SetLabel("All errors fixed ✓")
+                        if _spell_timer[0]:
+                            _spell_timer[0].Stop()
+                        _spell_timer[0] = wx.CallLater(500, _run_spell)
+                    elif fixed == text:
+                        status_label.SetLabel("No fixes needed")
+                    fix_btn.Enable()
+                wx.CallAfter(apply)
+            threading.Thread(target=run, daemon=True).start()
+
+        fix_btn.Bind(wx.EVT_BUTTON, _on_fix_all)
+
+        win.SetSizer(sizer)
+
+        cancel_btn.Bind(wx.EVT_BUTTON, lambda e: win.Destroy())
+
+        # ── Focus helpers ─────────────────────────────────────
+        # Prevent main frame's EVT_CHAR_HOOK from intercepting keys in this window
+        def _compose_char_hook(e):
+            e.Skip()
+        win.Bind(wx.EVT_CHAR_HOOK, _compose_char_hook)
+
+        # Each TextCtrl needs click→focus+caret and focus→caret handlers
+        def _make_click_focus(ctrl):
+            def _handler(e):
+                def _do():
+                    ctrl.SetFocus()
+                    ctrl.SetInsertionPointEnd()
+                wx.CallAfter(_do)
+                e.Skip()
+            return _handler
+
+        def _make_set_focus(ctrl):
+            def _handler(e):
+                wx.CallAfter(ctrl.SetInsertionPointEnd)
+                e.Skip()
+            return _handler
+
+        for ctrl in (to_entry, cc_entry, subj_entry, body_entry):
+            ctrl.Bind(wx.EVT_LEFT_DOWN, _make_click_focus(ctrl))
+            ctrl.Bind(wx.EVT_SET_FOCUS, _make_set_focus(ctrl))
+
+        def _on_send_new(evt):
+            to_raw = to_entry.GetValue().strip()
+            to_addrs = [a.strip() for a in to_raw.replace(",", ";").split(";")
+                        if a.strip() and "@" in a.strip()]
+            if not to_addrs:
+                showerror("Invalid Address",
+                          "Enter valid email address(es), separated by ;",
+                          parent=win)
+                return
+            subject = subj_entry.GetValue().strip()
+            body = body_entry.GetValue().strip()
+            if not subject and not body:
+                showerror("Empty", "Enter a subject or message body.",
+                          parent=win)
+                return
+
+            cc_raw = cc_entry.GetValue().strip()
+            cc_addrs = [a.strip() for a in cc_raw.replace(",", ";").split(";")
+                        if a.strip() and "@" in a.strip()] if cc_raw else None
+
+            # Build HTML
+            body_html = body.replace("\n", "<br>") if body else ""
+            sig_html = ""
+            if sig_check.GetValue():
+                # Temporarily set flag so _build_signature_html works
+                old_flag = getattr(self, '_reply_include_sig', True)
+                self._reply_include_sig = True
+                sig_html = self._build_signature_html()
+                self._reply_include_sig = old_flag
+            full_html = (
+                '<div style="font-family:Aptos,Aptos_MSFontService,-apple-system,'
+                'Roboto,Arial,Helvetica,sans-serif;font-size:12pt;color:rgb(33,33,33)">'
+                f'<div>{body_html}</div>{sig_html}</div>'
+            )
+
+            send_btn.SetLabel("Sending...")
+            send_btn.Disable()
+            display = f"New to {'; '.join(to_addrs)}"
+            delay_s = self.config.get("undo_send_seconds", 60)
+            send_at = datetime.now(timezone.utc) + timedelta(seconds=delay_s)
+
+            def _do_send():
+                try:
+                    draft = client.create_draft(
+                        subject, full_html, to_addrs, cc_addresses=cc_addrs)
+                    draft_id = draft.get("id")
+                    if not draft_id:
+                        wx.CallAfter(lambda: showerror(
+                            "Send Failed", "Could not create draft.",
+                            parent=win))
+                        wx.CallAfter(lambda: (
+                            send_btn.SetLabel("📤 Send"),
+                            send_btn.Enable()))
+                        return
+
+                    # Gmail sends immediately
+                    if draft.get("_sent"):
+                        log.info("[send] New email sent (Google): %s", display)
+                        wx.CallAfter(lambda: self._set_status(
+                            f"✓ {display} sent"))
+                        wx.CallAfter(win.Destroy)
+                        return
+
+                    # MS: queue with undo-send delay
+                    cats = [f"send_at:{send_at.isoformat()}"]
+                    client.set_email_categories(draft_id, cats)
+                    client.move_to_send_queue(draft_id)
+                    log.info("[send] Queued new: %s | draft=%s", display,
+                             draft_id[:40])
+                    wx.CallAfter(win.Destroy)
+                    wx.CallAfter(lambda: self._show_send_undo_bar(
+                        draft_id, display, delay_s))
+                except Exception as e:
+                    log.error("[send] New email failed: %s", str(e)[:200])
+                    wx.CallAfter(lambda: showerror(
+                        "Send Failed", str(e)[:300], parent=win))
+                    wx.CallAfter(lambda: (
+                        send_btn.SetLabel("📤 Send"),
+                        send_btn.Enable()))
+
+            threading.Thread(target=_do_send, daemon=True).start()
+
+        send_btn.Bind(wx.EVT_BUTTON, _on_send_new)
+
+        win.Show()
+        def _initial_focus():
+            to_entry.SetFocus()
+            to_entry.SetInsertionPointEnd()
+        wx.CallAfter(_initial_focus)
+
+        # Attach autocomplete after dialog is fully shown
+        def _attach_ac():
+            try:
+                EmailAutocomplete(to_entry,
+                                  lambda: getattr(self, '_address_book', []))
+                EmailAutocomplete(cc_entry,
+                                  lambda: getattr(self, '_address_book', []))
+            except Exception:
+                pass
+        wx.CallAfter(_attach_ac)
+
     # ── Reply / Forward ───────────────────────────────────────
 
     def _update_compose_btn_styles(self, active=None):

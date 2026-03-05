@@ -205,6 +205,7 @@ class BuildMixin:
         sizer.Add(self.user_label, 0, wx.ALIGN_CENTER_VERTICAL | wx.RIGHT, 6)
 
         for text, handler in [
+            ('✉ New', self._compose_new),
             ('↻ Refresh', self._refresh),
             ('⚙ Rules', self._open_scoring_settings),
             ('ℹ About', self._show_about),
@@ -806,6 +807,8 @@ class BuildMixin:
             self._on_key_snooze()
         elif key in (ord('m'), ord('M')):
             self._on_key_remind()
+        elif key in (ord('n'), ord('N')):
+            self._compose_new()
         else:
             event.Skip()
 

@@ -145,6 +145,7 @@ All rules, keywords, and thresholds are fully user-editable through the in-app r
 | `s` / `S` | Snooze |
 | `m` / `M` | Remind |
 | `Delete` | Delete |
+| `n` / `N` | Compose new email |
 | `Ctrl+K` | Command palette |
 
 ---
