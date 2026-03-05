@@ -63,7 +63,7 @@ The default `https://login.microsoftonline.com/common` supports personal and wor
 
 ### Google Gmail
 
-Each user sets up their own Google OAuth credentials. **Do not share or commit `google_credentials.json`** — it contains your OAuth client secret.
+Set-up your own Google OAuth credentials. **Do not share or commit `google_credentials.json`** — it contains your OAuth client secret.
 
 1. Create a project in [Google Cloud Console](https://console.cloud.google.com/)
 2. Enable the **Gmail API**, **People API**, and **Google Calendar API**
