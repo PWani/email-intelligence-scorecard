@@ -2,7 +2,7 @@
 
 A Windows desktop email client that unifies **Microsoft 365 (Outlook)** and **Google Gmail** into a single dashboard with intelligent email scoring, priority ranking, and keyboard-driven workflows.
 
-**Created by [Praneeth Wanigasekera](https://github.com/praneethw)**
+**Created by [Praneeth Wanigasekera](https://github.com/PWani)**
 
 ![Python](https://img.shields.io/badge/python-3.10+-blue)
 ![wxPython](https://img.shields.io/badge/UI-wxPython-green)
@@ -100,6 +100,8 @@ Config is stored at `~/.outlook_dashboard/config.json`. Key settings:
 | `signature_address2` | Address line 2 for signature | |
 | `signature_website` | Website URL for signature | |
 
+Your name, title, email, and phone are pulled automatically from your Microsoft/Google account profile. The signature fields above are optional additions you can set by editing `config.json` directly.
+
 ---
 
 ## Scoring Rules
@@ -135,19 +137,15 @@ All rules, keywords, and thresholds are fully user-editable through the in-app r
 
 | Key | Action |
 |---|---|
-| `j` / `k` | Next / Previous email |
-| `Enter` | Open selected email |
-| `Esc` | Back to list |
+| `↑` / `↓` | Navigate emails (list) or scroll body (detail) |
 | `r` | Reply |
-| `a` | Reply All |
-| `f` | Forward |
-| `c` | Compose new |
-| `e` | Archive |
-| `#` | Delete |
-| `s` | Snooze |
-| `!` | Toggle flag |
-| `/` | Focus search |
-| `?` | Show shortcut help |
+| `R` | Reply All |
+| `a` / `A` | Archive |
+| `f` / `F` | Forward |
+| `s` / `S` | Snooze |
+| `m` / `M` | Remind |
+| `Delete` | Delete |
+| `Ctrl+K` | Command palette |
 
 ---
 

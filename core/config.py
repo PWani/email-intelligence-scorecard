@@ -75,6 +75,10 @@ DEFAULT_CONFIG = {
     "undo_send_seconds": 60,
     "google_enabled": False,
     "google_credentials_file": "",
+    "signature_company": "",
+    "signature_address1": "",
+    "signature_address2": "",
+    "signature_website": "",
     "send_later_options": [
         {"label": "In 1 hour", "hours": 1},
         {"label": "In 2 hours", "hours": 2},
