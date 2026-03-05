@@ -1,0 +1,280 @@
+{
+  "_version": 2,
+  "_description": "Email prioritization scoring rules. Edit via Settings > Scoring Rules in the app.",
+  "base_score": 40,
+  "priority_thresholds": {
+    "urgent": 75,
+    "important": 55,
+    "normal": 35
+  },
+  "vip_senders": {
+    "enabled": true,
+    "entries": [
+      "gov",
+      "irs",
+      "sec"
+    ],
+    "sender_score": 35,
+    "recipient_score": 25,
+    "label": "VIP"
+  },
+  "critical_subjects": {
+    "enabled": true,
+    "patterns": [
+      "response required",
+      "urgent"
+    ],
+    "score": 40
+  },
+  "critical_subject_keywords": {
+    "enabled": true,
+    "patterns": [
+      "tax",
+      "sec",
+      "irs"
+    ],
+    "score": 40
+  },
+  "critical_sender_domains": {
+    "enabled": true,
+    "domains": [
+      ".gov"
+    ],
+    "score": 40
+  },
+  "conditional_rules": [
+    {
+      "enabled": true,
+      "name": "Auditor addressed to me",
+      "sender_contains": "auditor",
+      "must_be_to_recipient": true,
+      "score": 40
+    }
+  ],
+  "automated_senders": {
+    "enabled": true,
+    "patterns": [
+      "noreply",
+      "no-reply",
+      "notifications",
+      "mailer-daemon"
+    ],
+    "score": -20
+  },
+  "automated_senders_extended": [
+    "noreply",
+    "no-reply",
+    "notifications",
+    "mailer-daemon",
+    "marketing",
+    "newsletter",
+    "updates",
+    "info@",
+    "news@",
+    "hello@",
+    "support@",
+    "team@",
+    "digest",
+    "campaign"
+  ],
+  "name_question_detection": {
+    "enabled": true,
+    "score": 15,
+    "question_patterns": [
+      "\\?\\s*$",
+      "can you\\b",
+      "could you\\b",
+      "would you\\b",
+      "please advise",
+      "thoughts\\?",
+      "your take",
+      "what do you think",
+      "let me know",
+      "let us know",
+      "how would",
+      "where would",
+      "where should",
+      "who should"
+    ]
+  },
+  "urgent_keywords": {
+    "enabled": true,
+    "keywords": [
+      "urgent",
+      "asap",
+      "immediately",
+      "critical",
+      "emergency",
+      "deadline today",
+      "due today",
+      "action required",
+      "time sensitive",
+      "time-sensitive",
+      "high priority",
+      "escalation",
+      "p0",
+      "p1",
+      "blocker",
+      "blocking"
+    ],
+    "max_score": 25,
+    "per_hit": 10
+  },
+  "important_keywords": {
+    "enabled": true,
+    "keywords": [
+      "important",
+      "please review",
+      "action needed",
+      "action item",
+      "follow up",
+      "follow-up",
+      "decision needed",
+      "approval",
+      "approve",
+      "signature required",
+      "sign off",
+      "deadline",
+      "due date",
+      "deliverable",
+      "milestone",
+      "board meeting",
+      "investor",
+      "lp",
+      "limited partner",
+      "fund",
+      "portfolio",
+      "diligence",
+      "term sheet",
+      "loi",
+      "closing",
+      "wire",
+      "capital call",
+      "bank balance",
+      "account balance",
+      "cash"
+    ],
+    "max_score": 15,
+    "per_hit": 5
+  },
+  "general_question_detection": {
+    "enabled": true,
+    "patterns": [
+      "\\?\\s*$",
+      "can you\\b",
+      "could you\\b",
+      "would you\\b",
+      "please advise",
+      "thoughts\\?",
+      "your take",
+      "what do you think",
+      "let me know",
+      "let us know"
+    ],
+    "score": 8
+  },
+  "low_priority_keywords": {
+    "enabled": true,
+    "keywords": [
+      "unsubscribe",
+      "no-reply",
+      "noreply",
+      "do not reply",
+      "newsletter",
+      "digest",
+      "weekly update",
+      "monthly update",
+      "marketing",
+      "promotion",
+      "deal of the day",
+      "opt out",
+      "opt-out",
+      "notification",
+      "automated message"
+    ],
+    "max_score": 25,
+    "per_hit": 8
+  },
+  "calendar_keywords": {
+    "enabled": true,
+    "keywords": [
+      "meeting",
+      "calendar",
+      "invite",
+      "rsvp",
+      "schedule",
+      "zoom",
+      "teams meeting",
+      "webex",
+      "conference call"
+    ],
+    "score": 5
+  },
+  "static_signals": {
+    "unread": {
+      "enabled": true,
+      "score": 5
+    },
+    "high_importance": {
+      "enabled": true,
+      "score": 15
+    },
+    "low_importance": {
+      "enabled": true,
+      "score": -10
+    },
+    "flagged": {
+      "enabled": true,
+      "score": 12
+    },
+    "filtered_other": {
+      "enabled": true,
+      "score": -15
+    },
+    "direct_to": {
+      "enabled": true,
+      "score": 8
+    },
+    "cc_only": {
+      "enabled": true,
+      "score": -5
+    },
+    "has_attachments": {
+      "enabled": true,
+      "score": 3
+    },
+    "short_message": {
+      "enabled": true,
+      "score": 4,
+      "min_len": 10,
+      "max_len": 200
+    }
+  },
+  "recency_scores": {
+    "enabled": true,
+    "under_1h": 10,
+    "under_4h": 6,
+    "under_24h": 3,
+    "over_7d": -5
+  },
+  "category_keywords": {
+    "action": [
+      "action",
+      "approve",
+      "review",
+      "sign",
+      "deadline"
+    ],
+    "fyi": [
+      "fyi",
+      "for your information"
+    ]
+  },
+  "auto_archive_senders": {
+    "enabled": true,
+    "entries": [
+      "noreply@example.com",
+      "newsletter@example.com"
+    ]
+  }
+}

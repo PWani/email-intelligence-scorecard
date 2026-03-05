@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+build/
+*.spec
+
+# Config and tokens (sensitive - user-specific, stored in ~/.outlook_dashboard/)
+*.bin
+token_cache.bin
+google_token.json
+config.json
+address_book_cache.json
+offline_queue.json
+
+# User-customized scoring rules (default ships in assets/)
+.outlook_dashboard/
+
+# Logs
+*.log
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Backup files
+*.bak
+*.bak[0-9]*
+
+# Build artifacts
+*.exe
+*.intunewin
