@@ -63,17 +63,16 @@ The default `https://login.microsoftonline.com/common` supports personal and wor
 
 ### Google Gmail
 
-Google OAuth works universally — the OAuth client credentials are already bundled with the app in `assets/google_credentials.json`. Users don't need to create any Google Cloud project or download anything.
+Each user sets up their own Google OAuth credentials. **Do not share or commit `google_credentials.json`** — it contains your OAuth client secret.
 
-To enable Gmail:
+1. Create a project in [Google Cloud Console](https://console.cloud.google.com/)
+2. Enable the **Gmail API**, **People API**, and **Google Calendar API**
+3. Go to **Credentials** → Create **OAuth 2.0 Client ID** (application type: **Desktop app**)
+4. Download the credentials JSON file
+5. Place it at `~/.outlook_dashboard/google_credentials.json`, or enable Google in the app's **Settings** and browse to the file when prompted
+6. Sign in with your Google account in the browser popup that opens
 
-1. Go to **Settings** in the app and enable Google
-2. Sign in with your Google account in the browser popup that opens
-3. That's it — your Gmail appears alongside Microsoft mail
-
-Both accounts can be connected simultaneously. The inbox merges emails from both with a filter toggle.
-
-> **For developers forking this repo**: The bundled `google_credentials.json` is the OAuth client ID for this app. If you want to use your own, create a Desktop app credential in [Google Cloud Console](https://console.cloud.google.com/) and replace `assets/google_credentials.json`.
+Both Microsoft and Google accounts can be connected simultaneously. The inbox merges emails from both with a filter toggle.
 
 ### Run
 

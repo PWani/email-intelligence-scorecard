@@ -134,15 +134,8 @@ class AuthUIMixin:
 
         creds_file = self.config.get("google_credentials_file") or GOOGLE_CREDS_FILE
         if not os.path.exists(creds_file):
-            # Check bundled credentials in assets/ directory
-            try:
-                from ..core.google_client import _BUNDLED_CREDS
-                if os.path.exists(_BUNDLED_CREDS):
-                    creds_file = _BUNDLED_CREDS
-                else:
-                    return
-            except ImportError:
-                return
+            # No credentials file — Google not configured
+            return
 
         self._set_status("Connecting Google account...")
 
@@ -455,17 +448,10 @@ class AuthUIMixin:
                     parent=win)
                 return
 
-            # Check for credentials file — bundled in assets/ takes precedence
+            # Check for credentials file
             creds_file = self.config.get("google_credentials_file") or GOOGLE_CREDS_FILE
             if not os.path.exists(creds_file):
-                try:
-                    from ..core.google_client import _BUNDLED_CREDS
-                    if os.path.exists(_BUNDLED_CREDS):
-                        creds_file = _BUNDLED_CREDS
-                except ImportError:
-                    pass
-            if not os.path.exists(creds_file):
-                # Last resort: ask user to locate it
+                # Ask user to provide it
                 dlg = wx.FileDialog(win, "Select Google OAuth credentials JSON",
                     wildcard="JSON files (*.json)|*.json", style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
                 path = dlg.GetPath() if dlg.ShowModal() == wx.ID_OK else None

@@ -73,9 +73,6 @@ GOOGLE_SCOPES = [
 
 CONFIG_DIR = os.path.join(os.path.expanduser("~"), ".outlook_dashboard")
 GOOGLE_TOKEN_FILE = os.path.join(CONFIG_DIR, "google_token.json")
-# Look for credentials in user config dir first, then bundled with the app
-_BUNDLED_CREDS = os.path.join(os.path.dirname(os.path.dirname(__file__)),
-                              "assets", "google_credentials.json")
 GOOGLE_CREDS_FILE = os.path.join(CONFIG_DIR, "google_credentials.json")
 
 
@@ -161,20 +158,17 @@ class GoogleAuth:
 
     def _authenticate_interactive(self):
         """Run browser-based OAuth consent flow."""
-        # Check user-specified path, then bundled path
-        creds_path = self._creds_file
-        if not os.path.exists(creds_path) and os.path.exists(_BUNDLED_CREDS):
-            creds_path = _BUNDLED_CREDS
-        if not os.path.exists(creds_path):
+        if not os.path.exists(self._creds_file):
             raise FileNotFoundError(
                 f"Google credentials file not found: {self._creds_file}\n\n"
                 "To set up Google integration:\n"
-                "1. Place google_credentials.json in the assets/ directory, OR\n"
-                "2. Place it in your config directory:\n"
+                "1. Go to console.cloud.google.com\n"
+                "2. Create OAuth 2.0 Client ID (Desktop app)\n"
+                "3. Download the JSON and save as:\n"
                 f"   {self._creds_file}"
             )
         flow = InstalledAppFlow.from_client_secrets_file(
-            creds_path, GOOGLE_SCOPES)
+            self._creds_file, GOOGLE_SCOPES)
         self._creds = flow.run_local_server(port=8401, open_browser=True)
         self._save_token()
         return self._creds
