@@ -20,7 +20,11 @@ class EmailAutocomplete:
 
         entry.Bind(wx.EVT_TEXT, self._on_text)
         entry.Bind(wx.EVT_KEY_DOWN, self._on_key_down)
-        entry.Bind(wx.EVT_KILL_FOCUS, lambda e: wx.CallLater(150, self._close))
+        entry.Bind(wx.EVT_KILL_FOCUS, self._on_kill_focus)
+
+    def _on_kill_focus(self, event):
+        event.Skip()  # Critical: let focus transition complete so caret renders
+        wx.CallLater(150, self._close)
 
     # ── Internal helpers ──────────────────────────────────────
 

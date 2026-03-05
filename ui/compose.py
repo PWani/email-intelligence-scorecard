@@ -144,7 +144,7 @@ class ComposeMixin:
         # ── To field ──────────────────────────────────────────
         to_row = wx.BoxSizer(wx.HORIZONTAL)
         to_lbl = wx.StaticText(win, label="To:")
-        to_lbl.SetMinSize((55, -1))
+        to_lbl.SetMinSize((65, -1))
         to_row.Add(to_lbl, 0, wx.ALIGN_CENTER_VERTICAL | wx.RIGHT, 4)
         to_entry = wx.TextCtrl(win)
         to_row.Add(to_entry, 1, wx.EXPAND)
@@ -153,7 +153,7 @@ class ComposeMixin:
         # ── CC field ──────────────────────────────────────────
         cc_row = wx.BoxSizer(wx.HORIZONTAL)
         cc_lbl = wx.StaticText(win, label="CC:")
-        cc_lbl.SetMinSize((55, -1))
+        cc_lbl.SetMinSize((65, -1))
         cc_row.Add(cc_lbl, 0, wx.ALIGN_CENTER_VERTICAL | wx.RIGHT, 4)
         cc_entry = wx.TextCtrl(win)
         cc_row.Add(cc_entry, 1, wx.EXPAND)
@@ -162,7 +162,7 @@ class ComposeMixin:
         # ── Subject field ─────────────────────────────────────
         subj_row = wx.BoxSizer(wx.HORIZONTAL)
         subj_lbl = wx.StaticText(win, label="Subject:")
-        subj_lbl.SetMinSize((55, -1))
+        subj_lbl.SetMinSize((65, -1))
         subj_row.Add(subj_lbl, 0, wx.ALIGN_CENTER_VERTICAL | wx.RIGHT, 4)
         subj_entry = wx.TextCtrl(win)
         subj_row.Add(subj_entry, 1, wx.EXPAND)
@@ -421,7 +421,7 @@ class ComposeMixin:
             to_entry.SetInsertionPointEnd()
         wx.CallAfter(_initial_focus)
 
-        # Attach autocomplete after dialog is fully shown
+        # Attach autocomplete after window is fully shown
         def _attach_ac():
             try:
                 EmailAutocomplete(to_entry,
